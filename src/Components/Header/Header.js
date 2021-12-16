@@ -1,12 +1,17 @@
-import React from 'react';
-
+import React,{useContext} from 'react';
+import { firebaseContext } from '../../store/Context';
+import { userContext } from '../../store/Context';
 import './Header.css';
 import OlxLogo from '../../assets/OlxLogo';
 import Search from '../../assets/Search';
 import Arrow from '../../assets/Arrow';
 import SellButton from '../../assets/SellButton';
 import SellButtonPlus from '../../assets/SellButtonPlus';
+import {useHistory,Link} from 'react-router-dom';
 function Header() {
+  const {user} = useContext(userContext);
+  const {Firebase} = useContext(firebaseContext);
+  const history = useHistory();
   return (
     <div className="headerParentDiv">
       <div className="headerChildDiv">
@@ -34,10 +39,10 @@ function Header() {
           <Arrow></Arrow>
         </div>
         <div className="loginPage">
-          <span>Login</span>
+          <span>{user? `Hello ${user.displayName}`:<Link to='/login'>Login</Link> }</span>
           <hr />
         </div>
-
+        <span>{user? <span onClick={()=>{Firebase.auth().signOut().then(()=> history.push('/login'))}}>Logout</span>:''}</span>
         <div className="sellMenu">
           <SellButton></SellButton>
           <div className="sellMenuContent">

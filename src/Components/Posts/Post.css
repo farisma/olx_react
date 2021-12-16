@@ -74,7 +74,7 @@
 .card .date {
   display: flex;
   justify-content: flex-end;
-  font-size: small;
+  font-size: 9px;
 }
 
 .recommendations {
