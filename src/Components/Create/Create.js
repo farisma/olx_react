@@ -8,26 +8,52 @@ const Create = () => {
   const [category,setCategory] = useState('');
   const [price,setPrice] = useState('');
   const [image,setImage] = useState('');
+  const [thumbnail,setThumbnail] = useState('');
   const date = new Date();
   const {Firebase} = useContext(firebaseContext);
   const {user} = useContext(userContext);
   const history = useHistory();
   const handleSubmit = () => {
-    Firebase.storage().ref(`/image/${image.name}`).put(image).then(({ref}) => {
+    console.log("state_rtn", thumbnail);
+    Firebase.storage().ref(`/image/product_images/${thumbnail.name}`).put(thumbnail).then(({ref}) => {
       ref.getDownloadURL().then((url)=>{
-        console.log(url)
         Firebase.firestore().collection("products").add({
           userId:user.uid,
           name,
           price,
-          category,
-          url,
-          createdAt: date.toString()
-        }).then(()=>{
+          category,      
+          createdAt: date.toString(),
+          url:url
+    
+        }).then((docRef)=>{
+        let name;
+        console.log('doc',docRef.id)
+        for (const [key] of Object.entries(image)) {
+           name = image[key].name;
+       
+         
+                Firebase.storage().ref(`/image/product_images/${name}`).put(image[key]).then(({ref}) => {
+                  ref.getDownloadURL().then((url)=>{
+                  //  console.log("retunedURL",url)
+                    Firebase.firestore().collection("product_images").add({
+                       product_image_url:url,
+                       product_id:docRef.id
+                    });
+                
+                  })
+               
+            })
+        }
           history.push('/')
         })
-      })
-    })
+
+      });
+    });
+   
+    
+  
+   
+
   }
   return (
     <Fragment>
@@ -63,10 +89,15 @@ const Create = () => {
             <br />
          
           <br />
-          <img alt="Posts" width="200px" height="200px" src={image?URL.createObjectURL(image):''}></img>
+          <label htmlFor="Thumbnail">Thumbnail</label>
+          <br />
+          <input type="file" onChange={(e)=>{console.log(e.target.files[0]);setThumbnail(e.target.files[0])}} />
+          {/* <img alt="Posts" width="200px" height="200px" src={image?URL.createObjectURL(image):''}></img> */}
           
             <br />
-            <input type="file" onChange={(e)=>{console.log(e.target.files[0]);setImage(e.target.files[0])}} />
+            <label htmlFor="Thumbnail">Other images</label>
+          <br />
+            <input type="file" multiple onChange={(e)=>{console.log(e.target.files);setImage(e.target.files)}} />
             <br />
             <button onClick={handleSubmit} className="uploadBtn">upload and Submit</button>
           

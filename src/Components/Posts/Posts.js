@@ -2,14 +2,16 @@ import React,{useEffect,useContext,useState} from 'react';
 
 import Heart from '../../assets/Heart';
 import './Post.css';
-import { firebaseContext } from '../../store/Context';
+import { firebaseContext,userContext } from '../../store/Context';
 import {postContext} from '../../store/postContext';
 import {useHistory} from 'react-router-dom';
 function Posts() {
 const {Firebase} = useContext(firebaseContext);
 const {setPostDetails} = useContext(postContext);
+const {user}  = useContext(userContext);
 const [products, setProducts] = useState([]);
 const history = useHistory();
+const date = new Date();
 const handleClick = (product) => {
  
   setPostDetails(product);
@@ -31,6 +33,21 @@ useEffect(() => {
   })
 
 },[])
+
+const addTofavourites = (product_id) => {
+  //  console.log("fav",product_id);
+//console.log("user",user.uid)
+  if(Object.keys(user).length === 0 && user.constructor === Object){
+    history.push('/login');
+  }
+  else {
+  Firebase.firestore().collection("favourites").add({
+    product_id,
+    user_id:user.uid,     
+    createdAt: date.toString()
+  })
+ }
+}
   return (
     <div className="postParentDiv">
       <div className="moreView">
@@ -42,13 +59,13 @@ useEffect(() => {
           {
             products? 
             products.map(product => {
-              return <div className="card" onClick={()=>handleClick(product)}>
+              return <div className="card" >
             
           
-              <div className="favorite">
+              <div className="favorite" onClick={()=>addTofavourites(product.id)}>
                 <Heart></Heart>
               </div>
-              <div className="image">
+              <div className="image" onClick={()=>handleClick(product)}>
                 <img src={product.url?product.url:''} alt="" />
               </div>
               <div className="content">
